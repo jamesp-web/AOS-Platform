@@ -1,0 +1,14 @@
+{
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python", "config": { "includeFiles": "backend/**", "maxLambdaSize": "50mb" } },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "src/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "api/index.py" },
+    { "src": "/health", "dest": "api/index.py" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(src/.*)", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

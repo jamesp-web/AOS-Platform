@@ -1,0 +1,29 @@
+# Render blueprint for the ALIP FastAPI backend.
+# Deploy: Render Dashboard -> New -> Blueprint -> pick this repo.
+# Set the `sync: false` vars in the Render dashboard (they're secrets).
+services:
+  - type: web
+    name: alip-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: ALIP_ENV
+        value: production
+      - key: ALIP_CORS_ORIGINS
+        sync: false     # your Vercel domain, e.g. https://your-app.vercel.app
+      - key: OPENAI_BASE_URL
+        sync: false     # cloud LLM, e.g. https://api.groq.com/openai/v1/chat/completions
+      - key: OPENAI_MODEL
+        sync: false     # e.g. llama-3.1-8b-instant  (NOT Ollama — localhost is unreachable in the cloud)
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false     # Supabase session-pooler URI (…pooler.supabase.com:5432/postgres)

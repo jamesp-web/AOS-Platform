@@ -1,0 +1,39 @@
+# ── Secrets & env ──
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# ── Python / backend ──
+.venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ── Local data (use Supabase in production) ──
+*.db
+backend/alip.db
+backend/app/cache/
+backend/app/uploads/
+backend/app/exports/
+
+# ── Node / frontend ──
+node_modules/
+npm-debug.log*
+
+# ── OS / editor ──
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# ── Vercel ──
+.vercel
+
+# ── Tooling state (claude-flow / ruflo) ──
+.claude-flow/
+.ruflo/

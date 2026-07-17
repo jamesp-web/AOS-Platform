@@ -36,8 +36,16 @@ def _semaphore() -> "asyncio.Semaphore":
 def whitelist(obj: Dict[str, Any]) -> Dict[str, Any]:
     """Keep only allowed analyst keys — a score/recommendation from the model is discarded."""
     out = {k: obj[k] for k in ALLOWED if k in obj}
-    if not isinstance(out.get("keySignals"), list):
-        out["keySignals"] = [str(out["keySignals"])] if out.get("keySignals") else []
+    for arr_key in ("keySignals", "offlineAdvertisingChannels"):
+        val = out.get(arr_key)
+        if not isinstance(val, list):
+            out[arr_key] = [str(val)] if val else []
+    # Normalise OOH channels to the known vocabulary (exact strings), dropping anything unrecognised.
+    known = {c.lower(): c for c in prompt.OOH_CHANNELS}
+    out["offlineAdvertisingChannels"] = [
+        known[k] for x in out["offlineAdvertisingChannels"]
+        if (k := str(x).strip().lower()) in known
+    ]
     try:
         out["confidence"] = max(0, min(100, int(out.get("confidence", 0))))
     except (TypeError, ValueError):

@@ -34,6 +34,21 @@ var OPTS = { apiKey: 'sk-test', maxRetries: 0 };
     var u = AnalystPrompt.buildUser({ companyName: 'Reliance Retail', research: { answer: 'big retailer', sources: [{ title: 'Site', snippet: 'shops' }] } });
     assert.ok(/Reliance Retail/.test(u) && /big retailer/.test(u));
   });
+  await test('prompt is versioned analyst-v2 with the richer signal keys', function () {
+    assert.strictEqual(AnalystPrompt.VERSION, 'analyst-v2');
+    assert.strictEqual(AnalystPrompt.OOH_CHANNELS.length, 8);
+    ['offlineAdvertisingChannels', 'digitalMarketingActivity', 'retailPresence',
+     'marketingInvestment', 'campaignFrequency', 'storeOpenings'].forEach(function (k) {
+      assert.ok(AnalystPrompt.ALLOWED_KEYS.indexOf(k) !== -1, 'missing ' + k);
+    });
+  });
+  await test('whitelist normalises OOH channels to the vocabulary and drops junk', function () {
+    var clean = AIIntelligenceService.whitelist({
+      industry: 'Retail', confidence: 80,
+      offlineAdvertisingChannels: ['mall branding', 'LED SCREENS', 'Skywriting']
+    });
+    assert.deepStrictEqual(clean.offlineAdvertisingChannels, ['Mall Branding', 'LED Screens']);
+  });
 
   console.log('OpenAIService — success & analyst-only');
   await test('returns structured JSON on success', async function () {

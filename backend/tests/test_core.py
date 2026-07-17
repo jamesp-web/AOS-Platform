@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # backend/
 from app.models import company as company_model          # noqa: E402
 from app.services import duplicate_service, research_queue, scoring_engine, selectors  # noqa: E402
 from app.services import ai_stub  # noqa: E402
+from app.prompts import analyst_prompt  # noqa: E402
 
 passed = 0
 
@@ -47,6 +48,33 @@ check("weights sum to 100", sum(f["max"] for f in s["breakdown"]) == 100)
 check("thresholds map correctly", (scoring_engine.recommendation_for(90) == "High Priority"
       and scoring_engine.recommendation_for(74) == "Review" and scoring_engine.recommendation_for(59) == "Deprioritize"))
 
+print("Analyst prompt v2")
+check("prompt is versioned analyst-v2", analyst_prompt.VERSION == "analyst-v2")
+check("OOH vocabulary has 8 channels", len(analyst_prompt.OOH_CHANNELS) == 8)
+check("new v2 signal keys are extractable",
+      {"offlineAdvertisingChannels", "digitalMarketingActivity", "retailPresence",
+       "marketingInvestment", "campaignFrequency", "storeOpenings"} <= set(analyst_prompt.ALLOWED_KEYS))
+
+print("ScoringEngine v2 signals")
+# Same v1 core, but WITH richer analyst-v2 signals: a proven multi-format OOH buyer
+# with high marketing spend should max out advertising + expansion.
+V2_INTEL = {"industry": "Retail", "financialHealth": "Moderate", "advertisingActivity": "Medium",
+            "growthSignals": "Moderate", "expansionSignals": "Stable", "decisionMakerLikelihood": "Medium",
+            "confidence": 82,
+            "offlineAdvertisingChannels": ["Mall Branding", "Metro Branding", "LED Screens"],
+            "digitalMarketingActivity": "High", "marketingInvestment": "High", "campaignFrequency": "Frequent",
+            "seasonalCampaigns": "Active", "brandAwarenessCampaigns": "Active",
+            "storeOpenings": "Rapid", "retailPresence": "Extensive"}
+V1_ONLY = {k: v for k, v in V2_INTEL.items() if k in
+           ("industry", "financialHealth", "advertisingActivity", "growthSignals",
+            "expansionSignals", "decisionMakerLikelihood", "confidence")}
+rich = {f["key"]: f["earned"] for f in scoring_engine.score({"crm": {}, "ai": {"intelligence": V2_INTEL}})["breakdown"]}
+base = {f["key"]: f["earned"] for f in scoring_engine.score({"crm": {}, "ai": {"intelligence": V1_ONLY}})["breakdown"]}
+check("v1-only baseline is unchanged (Medium adv=13, Stable exp=5)", base["advertising"] == 13 and base["expansion"] == 5)
+check("v2 OOH + spend signals lift advertising to the cap", rich["advertising"] == 20)
+check("v2 store-openings + footprint lift expansion to the cap", rich["expansion"] == 10)
+check("v2 signals never touch unrelated factors", rich["industryFit"] == base["industryFit"] and rich["growth"] == base["growth"])
+
 print("DuplicateService")
 raw = [
     {"brandName": "Kalyan Jewellers", "brandId": "K1", "owner": "Sagar", "agency": "Wavemaker", "duplicateStatus": "Unique"},
@@ -74,6 +102,8 @@ check("unique companies remain pending", qs["pending"] == 3)
 print("AI stub + IntelligenceSelectors")
 intel = ai_stub.analyze("Kalyan Jewellers", {})
 check("analyst stub returns industry, no score", intel.get("industry") == "Jewellery" and "opportunityScore" not in intel)
+check("analyst stub emits v2 signals (channels as a list)",
+      isinstance(intel.get("offlineAdvertisingChannels"), list) and intel.get("marketingInvestment") is not None)
 # enrich two companies with a score for KPI checks
 for c in companies[:2]:
     c["ai"]["intelligence"] = RELIANCE["ai"]["intelligence"]

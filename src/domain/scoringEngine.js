@@ -35,10 +35,49 @@
     'government': 4
   };
 
+  // ── analyst-v2 richer signals ──────────────────────────────────────────────
+  // Refine the advertising & expansion factors. Every table returns 0 for an
+  // absent, "Unknown" or unrecognised value, so v1-era intelligence (which lacks
+  // these keys) scores identically to before — the boosts only add signal.
+  var OOH_CHANNELS = ['billboards', 'hoardings', 'metro branding', 'airport branding',
+    'mall branding', 'transit advertising', 'digital screens', 'led screens'];
+  var MARKETING_INVEST = { 'high': 3, 'moderate': 1, 'low': 0, 'minimal': -1 };
+  var CAMPAIGN_FREQ = { 'frequent': 2, 'periodic': 1, 'occasional': 0, 'rare': 0, 'none': -1 };
+  var DIGITAL_MKTG = { 'very high': 2, 'high': 1, 'medium': 0, 'low': 0, 'inactive': 0 };
+  var CAMPAIGN_YES_NO = { 'active': 1, 'occasional': 0, 'none': 0 };   // seasonal / brand-awareness
+  var STORE_OPENINGS = { 'rapid': 3, 'active': 2, 'occasional': 1, 'none': 0 };
+  var RETAIL_PRESENCE = { 'extensive': 2, 'moderate': 1, 'limited': 0, 'online-only': 0, 'online only': 0 };
+  var OOH_PER_CHANNEL = 2;   // proven use of an OOH format is the strongest DOOH-buyer signal
+  var OOH_CHANNEL_CAP = 8;
+
   function look(map, value, fallback) {
     if (value == null) { return fallback; }
     var v = map[String(value).trim().toLowerCase()];
     return v == null ? fallback : v;
+  }
+
+  /** Points for OOH formats the company already buys — capped so a long list can't dominate. */
+  function oohChannelBoost(intel) {
+    var channels = intel.offlineAdvertisingChannels;
+    if (typeof channels === 'string') { channels = [channels]; }
+    if (!Array.isArray(channels)) { return 0; }
+    var n = channels.filter(function (c) { return OOH_CHANNELS.indexOf(String(c).trim().toLowerCase()) !== -1; }).length;
+    return Math.min(OOH_CHANNEL_CAP, n * OOH_PER_CHANNEL);
+  }
+
+  /** DOOH-propensity signals layered on top of the headline advertisingActivity level. */
+  function advertisingBoost(intel) {
+    return oohChannelBoost(intel) +
+      look(MARKETING_INVEST, intel.marketingInvestment, 0) +
+      look(CAMPAIGN_FREQ, intel.campaignFrequency, 0) +
+      look(DIGITAL_MKTG, intel.digitalMarketingActivity, 0) +
+      look(CAMPAIGN_YES_NO, intel.seasonalCampaigns, 0) +
+      look(CAMPAIGN_YES_NO, intel.brandAwarenessCampaigns, 0);
+  }
+
+  /** Physical-footprint growth = more real-world surfaces AdOnMo can sell against. */
+  function expansionBoost(intel) {
+    return look(STORE_OPENINGS, intel.storeOpenings, 0) + look(RETAIL_PRESENCE, intel.retailPresence, 0);
   }
 
   /** Lead Quality (0–10): CRM completeness + non-duplicate + analyst confidence. */
@@ -85,10 +124,10 @@
     var intel = (company.ai && company.ai.intelligence) || {};
     var factors = [
       { key: 'businessHealth', label: 'Business Health', max: WEIGHTS.businessHealth, earned: look(FINANCIAL, intel.financialHealth, 10) },
-      { key: 'advertising', label: 'Advertising Activity', max: WEIGHTS.advertising, earned: look(ADVERTISING, intel.advertisingActivity, 8) },
+      { key: 'advertising', label: 'Advertising Activity', max: WEIGHTS.advertising, earned: look(ADVERTISING, intel.advertisingActivity, 8) + advertisingBoost(intel) },
       { key: 'industryFit', label: 'Industry Fit', max: WEIGHTS.industryFit, earned: look(INDUSTRY_FIT, intel.industry, 9) },
       { key: 'growth', label: 'Growth Signals', max: WEIGHTS.growth, earned: look(GROWTH, intel.growthSignals, 8) },
-      { key: 'expansion', label: 'Expansion Signals', max: WEIGHTS.expansion, earned: look(EXPANSION, intel.expansionSignals, 5) },
+      { key: 'expansion', label: 'Expansion Signals', max: WEIGHTS.expansion, earned: look(EXPANSION, intel.expansionSignals, 5) + expansionBoost(intel) },
       { key: 'decisionMaker', label: 'Decision Maker', max: WEIGHTS.decisionMaker, earned: look(DECISION, intel.decisionMakerLikelihood, 5) },
       { key: 'leadQuality', label: 'Lead Quality', max: WEIGHTS.leadQuality, earned: leadQuality(company, intel) }
     ];

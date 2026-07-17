@@ -19,10 +19,17 @@
 
   var KEY_STORAGE = 'alip.openai.apiKey';
 
-  var ALLOWED_KEYS = ['industry', 'companyType', 'financialHealth', 'advertisingActivity',
-    'growthSignals', 'expansionSignals', 'decisionMakerLikelihood', 'businessSummary', 'keySignals', 'confidence'];
+  // analyst-v2 schema (superset of v1). Mirrors backend/app/prompts/analyst_prompt.py.
+  var ALLOWED_KEYS = ['industry', 'companyType', 'financialHealth',
+    'advertisingActivity', 'offlineAdvertisingChannels', 'digitalMarketingActivity',
+    'growthSignals', 'expansionSignals', 'retailPresence', 'storeOpenings',
+    'campaignFrequency', 'seasonalCampaigns', 'brandAwarenessCampaigns',
+    'marketingInvestment', 'decisionMakerLikelihood',
+    'businessSummary', 'keySignals', 'confidence'];
   // keys the analyst must never emit (decisions belong to the app)
   var FORBIDDEN = { opportunityScore: 1, score: 1, recommendation: 1, priority: 1, rating: 1, rank: 1 };
+  var OOH_CHANNELS = ['Billboards', 'Hoardings', 'Metro Branding', 'Airport Branding',
+    'Mall Branding', 'Transit Advertising', 'Digital Screens', 'LED Screens'];
 
   function getApiKey() { try { return (root.localStorage && root.localStorage.getItem(KEY_STORAGE)) || ''; } catch (e) { return ''; } }
   function hasApiKey() { return !!getApiKey(); }
@@ -33,6 +40,14 @@
     ALLOWED_KEYS.forEach(function (k) { if (obj[k] !== undefined) { out[k] = obj[k]; } });
     for (var k in obj) { if (FORBIDDEN[k]) { /* explicitly discarded */ } }
     if (!Array.isArray(out.keySignals)) { out.keySignals = out.keySignals ? [String(out.keySignals)] : []; }
+    // Normalise OOH channels to the known vocabulary (exact strings), dropping anything unrecognised.
+    var known = {};
+    OOH_CHANNELS.forEach(function (c) { known[c.toLowerCase()] = c; });
+    var raw = Array.isArray(out.offlineAdvertisingChannels) ? out.offlineAdvertisingChannels
+      : (out.offlineAdvertisingChannels ? [out.offlineAdvertisingChannels] : []);
+    out.offlineAdvertisingChannels = raw
+      .map(function (x) { return known[String(x).trim().toLowerCase()]; })
+      .filter(function (x) { return !!x; });
     out.confidence = Math.max(0, Math.min(100, parseInt(out.confidence, 10) || 0));
     return out;
   }
@@ -73,13 +88,22 @@
     var dm = pick(['High', 'High', 'Medium', 'Low'], name + '|dm');
     var confidence = 70 + (hash(name + '|conf') % 26);
     var researched = company.ai && company.ai.research;
+    var channels = OOH_CHANNELS.slice(0, hash(name + '|ch') % (OOH_CHANNELS.length + 1)); // 0..8 formats
     return {
       industry: industry,
       companyType: TYPE_BY_INDUSTRY[industry] || 'Consumer Brand',
       financialHealth: fin,
       advertisingActivity: adv,
+      offlineAdvertisingChannels: channels,
+      digitalMarketingActivity: pick(['Very High', 'High', 'Medium', 'Low', 'Inactive'], name + '|dig'),
       growthSignals: growth,
       expansionSignals: expansion,
+      retailPresence: pick(['Extensive', 'Moderate', 'Limited', 'Online-only', 'Unknown'], name + '|ret'),
+      storeOpenings: pick(['Rapid', 'Active', 'Occasional', 'None', 'Unknown'], name + '|so'),
+      campaignFrequency: pick(['Frequent', 'Periodic', 'Occasional', 'Rare', 'None'], name + '|cf'),
+      seasonalCampaigns: pick(['Active', 'Occasional', 'None', 'Unknown'], name + '|sea'),
+      brandAwarenessCampaigns: pick(['Active', 'Occasional', 'None', 'Unknown'], name + '|baw'),
+      marketingInvestment: pick(['High', 'Moderate', 'Low', 'Minimal', 'Unknown'], name + '|mi'),
       decisionMakerLikelihood: dm,
       businessSummary: name + ' operates in the ' + industry + ' sector as a ' + (TYPE_BY_INDUSTRY[industry] || 'consumer brand') +
         '. Research indicates ' + fin.toLowerCase() + ' financial health, ' + adv.toLowerCase() +

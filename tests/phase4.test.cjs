@@ -47,6 +47,30 @@ function byKey(breakdown, key) { return breakdown.filter(function (f) { return f
     assert.deepStrictEqual(a.breakdown.map(function (f) { return f.earned; }), b.breakdown.map(function (f) { return f.earned; }));
   });
 
+  console.log('ScoringEngine — analyst-v2 richer signals');
+  var v2Intel = {
+    industry: 'Retail', financialHealth: 'Moderate', advertisingActivity: 'Medium',
+    growthSignals: 'Moderate', expansionSignals: 'Stable', decisionMakerLikelihood: 'Medium', confidence: 82,
+    offlineAdvertisingChannels: ['Mall Branding', 'Metro Branding', 'LED Screens'],
+    digitalMarketingActivity: 'High', marketingInvestment: 'High', campaignFrequency: 'Frequent',
+    seasonalCampaigns: 'Active', brandAwarenessCampaigns: 'Active', storeOpenings: 'Rapid', retailPresence: 'Extensive'
+  };
+  var v1Only = { industry: 'Retail', financialHealth: 'Moderate', advertisingActivity: 'Medium',
+    growthSignals: 'Moderate', expansionSignals: 'Stable', decisionMakerLikelihood: 'Medium', confidence: 82 };
+  await test('v1-only intelligence is unchanged (Medium adv=13, Stable exp=5)', function () {
+    var b = ScoringEngine.score({ crm: {}, ai: { intelligence: v1Only } }).breakdown;
+    assert.strictEqual(byKey(b, 'advertising').earned, 13);
+    assert.strictEqual(byKey(b, 'expansion').earned, 5);
+  });
+  await test('v2 OOH + spend + footprint signals lift advertising & expansion to the cap', function () {
+    var r = ScoringEngine.score({ crm: {}, ai: { intelligence: v2Intel } }).breakdown;
+    var b = ScoringEngine.score({ crm: {}, ai: { intelligence: v1Only } }).breakdown;
+    assert.strictEqual(byKey(r, 'advertising').earned, 20);
+    assert.strictEqual(byKey(r, 'expansion').earned, 10);
+    assert.strictEqual(byKey(r, 'industryFit').earned, byKey(b, 'industryFit').earned); // untouched
+    assert.strictEqual(byKey(r, 'growth').earned, byKey(b, 'growth').earned);           // untouched
+  });
+
   console.log('ScoringEngine — recommendation thresholds');
   await test('90+/75-89/60-74/<60 map to the correct recommendation', function () {
     assert.strictEqual(ScoringEngine.recommendationFor(93), 'High Priority');

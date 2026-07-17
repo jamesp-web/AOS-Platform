@@ -6,6 +6,8 @@ Returns intelligence ONLY — never a score or recommendation.
 import re
 from typing import Any, Dict
 
+from ..prompts.analyst_prompt import OOH_CHANNELS
+
 _FNV = 0x811C9DC5
 
 
@@ -59,10 +61,19 @@ def analyze(company_name: str, research: Dict[str, Any]) -> Dict[str, Any]:
     dm = _pick(["High", "High", "Medium", "Low"], name + "|dm")
     confidence = 70 + (_hash(name + "|conf") % 26)
     n_sources = len((research or {}).get("sources") or [])
+    channels = OOH_CHANNELS[: _hash(name + "|ch") % (len(OOH_CHANNELS) + 1)]  # 0..8 formats
     return {
         "industry": industry, "companyType": _TYPE.get(industry, "Consumer Brand"),
         "financialHealth": fin, "advertisingActivity": adv, "growthSignals": growth,
         "expansionSignals": expansion, "decisionMakerLikelihood": dm,
+        "offlineAdvertisingChannels": channels,
+        "digitalMarketingActivity": _pick(["Very High", "High", "Medium", "Low", "Inactive"], name + "|dig"),
+        "retailPresence": _pick(["Extensive", "Moderate", "Limited", "Online-only", "Unknown"], name + "|ret"),
+        "storeOpenings": _pick(["Rapid", "Active", "Occasional", "None", "Unknown"], name + "|so"),
+        "campaignFrequency": _pick(["Frequent", "Periodic", "Occasional", "Rare", "None"], name + "|cf"),
+        "seasonalCampaigns": _pick(["Active", "Occasional", "None", "Unknown"], name + "|sea"),
+        "brandAwarenessCampaigns": _pick(["Active", "Occasional", "None", "Unknown"], name + "|baw"),
+        "marketingInvestment": _pick(["High", "Moderate", "Low", "Minimal", "Unknown"], name + "|mi"),
         "businessSummary": (f"{name} operates in the {industry} sector as a {_TYPE.get(industry, 'consumer brand')}. "
                             f"Research indicates {fin.lower()} financial health, {adv.lower()} advertising activity "
                             f"and {growth.lower()} growth signals."),

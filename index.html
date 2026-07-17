@@ -190,7 +190,8 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
 .opp-meta{font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 
 /* ═══ AI CATEGORIES ═══ */
-.section-head{margin-bottom:16px}
+.section-head{margin-bottom:16px;margin-top:32px}
+.section-title{font-size:22px;font-weight:800;color:var(--t);letter-spacing:-.025em;line-height:1.2}
 .cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 .cat-card{background:var(--w);border:1px solid var(--b);border-radius:16px;padding:19px;cursor:pointer;transition:.22s var(--ease);box-shadow:var(--sh-sm)}
 .cat-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
@@ -294,7 +295,7 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
 .cd-logo{width:66px;height:66px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:var(--sh-md)}
 .cd-info{flex:1;min-width:0}
 .cd-sec-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;background:var(--pl);border-radius:8px;font-size:11.5px;font-weight:600;color:var(--pd);margin-bottom:9px}
-.cd-name{font-size:28px;font-weight:800;color:var(--t);margin-bottom:11px;letter-spacing:-.03em;line-height:1.1}
+.cd-name{font-size:28px;font-weight:800;color:var(--t);margin-bottom:11px;letter-spacing:-.03em;line-height:1.1;overflow-wrap:anywhere}
 .cd-meta-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
 .cd-meta-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t3);font-weight:600}
 .cd-meta-item svg{width:15px;height:15px;stroke:var(--t4);fill:none;stroke-width:1.9}
@@ -416,6 +417,12 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
   .action-grid{grid-template-columns:repeat(2,1fr)}
   .fi-layout{grid-template-columns:1fr}
 }
+
+/* ═══ RESPONSIVE · hamburger + drawer base (breakpoints live at the very end of the sheet, after all base rules, so grid overrides win) ═══ */
+.menu-btn{display:none;width:38px;height:38px;border-radius:10px;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);border:1px solid transparent;flex-shrink:0;transition:.18s var(--ease)}
+.menu-btn:hover{background:var(--bg);border-color:var(--b);color:var(--t)}
+.menu-btn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.sb-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.42);opacity:0;visibility:hidden;transition:opacity .28s var(--ease);z-index:19}
 /* ═══ CRM Upload (Phase 1) — additive, reuses existing tokens ═══ */
 .up-zone{margin-top:22px;background:var(--w);border:1.5px dashed var(--t5);border-radius:16px;transition:.18s var(--ease);cursor:pointer;box-shadow:var(--sh-xs)}
 .up-zone:hover{border-color:var(--p3);background:var(--pl)}
@@ -632,20 +639,24 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
 .brief-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:13px;font-weight:700;padding:7px 12px;border-radius:10px;cursor:pointer;transition:.16s var(--ease);backdrop-filter:blur(8px)}
 .brief-chip:hover{background:rgba(255,255,255,.26)}
 .brief-chip b{font-size:12px;background:rgba(255,255,255,.22);border-radius:6px;padding:1px 7px;font-variant-numeric:tabular-nums}
-.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-.action-card{background:var(--w);border:1px solid var(--b);border-radius:14px;padding:16px;box-shadow:var(--sh-xs);cursor:pointer;transition:.2s var(--ease);border-left:3px solid var(--b)}
-.action-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
-.action-top{display:flex;align-items:center;gap:8px;margin-bottom:11px}
-.action-pill{font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:20px}
+.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px;align-items:stretch}
+.action-card{position:relative;display:flex;flex-direction:column;overflow:hidden;background:var(--w);border:1px solid var(--b);border-radius:14px;padding:15px 16px 15px 17px;box-shadow:var(--sh-xs);cursor:pointer;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.action-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--t5)}
+.action-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--pl2)}
+.action-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.action-pill{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border-radius:6px;line-height:1.4}
 .pri-high{background:var(--rl);color:#B91C1C}
 .pri-med{background:var(--ol);color:#B45309}
 .pri-low{background:var(--b2);color:var(--t3)}
-.action-card:has(.pri-high){border-left-color:var(--r)}
-.action-card:has(.pri-med){border-left-color:var(--o)}
-.action-type{font-size:11px;font-weight:700;color:var(--t3)}
-.action-company{font-size:15px;font-weight:800;color:var(--t);letter-spacing:-.02em;margin-bottom:4px}
-.action-reason{font-size:12px;color:var(--t3);font-weight:600;line-height:1.45;margin-bottom:12px;min-height:34px}
-.action-owner{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--t2);border-top:1px solid var(--b2);padding-top:10px}
+.action-card:has(.pri-high)::before{background:var(--r)}
+.action-card:has(.pri-med)::before{background:var(--o)}
+.action-type{font-size:11px;font-weight:700;color:var(--t3);letter-spacing:-.01em}
+.action-arrow{margin-left:auto;display:flex;color:var(--t5);transition:.18s var(--ease)}
+.action-arrow svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.4}
+.action-card:hover .action-arrow{color:var(--p);transform:translateX(2px)}
+.action-company{font-size:15.5px;font-weight:800;color:var(--t);letter-spacing:-.02em;margin-bottom:5px;line-height:1.25}
+.action-reason{font-size:12px;color:var(--t3);font-weight:600;line-height:1.45;margin-bottom:13px}
+.action-owner{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--t2);border-top:1px solid var(--b2);padding-top:11px;margin-top:auto}
 .action-owner svg{width:14px;height:14px;stroke:var(--t4);fill:none;stroke-width:2}
 .fi-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
 .fi-grid{display:flex;flex-direction:column;gap:12px;margin-top:12px}
@@ -666,6 +677,41 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
 .sig-dot.sig-dot-off .sig-dot-i{background:var(--t5)}
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .skeleton{background:linear-gradient(90deg,var(--b2) 25%,#EEF2F7 50%,var(--b2) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear;border-radius:8px}
+
+/* ═══ RESPONSIVE · tablet & mobile breakpoints ═══
+   Placed last, after every base rule, so these grid/layout overrides win the cascade
+   (equal specificity → later source order wins) at ≤900px and ≤560px. */
+@media(max-width:900px){
+  /* Sidebar becomes an off-canvas drawer toggled by body.nav-open */
+  .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);transition:transform .28s var(--ease);box-shadow:var(--sh-xl)}
+  body.nav-open .sidebar{transform:none}
+  .sb-backdrop{display:block}
+  body.nav-open .sb-backdrop{opacity:1;visibility:visible}
+  .menu-btn{display:flex}
+  header{padding:0 16px;gap:10px}
+  .content{padding:22px 18px 48px}
+  .page-title{font-size:24px}
+  .stat-grid,.cat-grid,.comp-grid,.up-summary,.up-cols,.val-summary,
+  .rq-summary,.exec-kpis,.li-filters,.action-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  header{padding:0 12px;gap:8px}
+  .h-search{display:none}            /* reclaim header width on phones */
+  .h-user-info{display:none}         /* keep the avatar, drop the name/role text */
+  .h-div{display:none}
+  .h-icons{gap:4px}
+  .content{padding:18px 13px 42px}
+  .page-lbl{font-size:9.5px}
+  .page-title{font-size:21px;letter-spacing:-.02em}
+  .page-desc{font-size:13px}
+  .stat-grid,.cat-grid,.comp-grid,.up-summary,.up-cols,.val-summary,
+  .rq-summary,.exec-kpis,.li-filters,.action-grid,.chart-grid{grid-template-columns:1fr}
+  /* Company detail header stacks so the score ring never collides with a long name */
+  .cd-header{flex-wrap:wrap;padding:20px;gap:14px}
+  .cd-name{font-size:22px}
+  .cd-score-area{flex-basis:100%;padding-left:0;padding-top:16px;margin-top:2px;border-left:none;border-top:1px solid var(--b);text-align:left}
+}
 </style>
 </head>
 <body>
@@ -708,8 +754,10 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
 </aside>
 
 <!-- ═══ MAIN ═══ -->
+<div class="sb-backdrop" id="sb-backdrop"></div>
 <div class="main">
   <header>
+    <div class="menu-btn" id="menu-btn" role="button" aria-label="Open menu"><svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
     <div class="h-search">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" placeholder="Search 210 companies · e.g. Reliance, Insurance, CaratLane...">
@@ -881,9 +929,13 @@ header{height:var(--hh);background:rgba(255,255,255,.85);backdrop-filter:saturat
     var el=document.getElementById('page-'+page); if(el) el.classList.add('active');
     var nav=document.querySelector('[data-page="'+(page==='company-detail'?'companies':page)+'"]'); if(nav) nav.classList.add('active');
   }
-  window.navigate=function(page){ show(page); var v=(window.ALIP||{})[VIEWS[page]]; if(v&&v.render) v.render(); var c=document.querySelector(".content"); if(c) c.scrollTop=0; };
-  window.openCompany=function(id){ show("company-detail"); var v=(window.ALIP||{}).CompaniesView; if(v&&v.renderDetail) v.renderDetail(id); var c=document.querySelector(".content"); if(c) c.scrollTop=0; };
+  function closeDrawer(){ document.body.classList.remove('nav-open'); }
+  window.navigate=function(page){ show(page); var v=(window.ALIP||{})[VIEWS[page]]; if(v&&v.render) v.render(); var c=document.querySelector(".content"); if(c) c.scrollTop=0; closeDrawer(); };
+  window.openCompany=function(id){ show("company-detail"); var v=(window.ALIP||{}).CompaniesView; if(v&&v.renderDetail) v.renderDetail(id); var c=document.querySelector(".content"); if(c) c.scrollTop=0; closeDrawer(); };
   document.getElementById('nav').addEventListener('click',function(e){var i=e.target.closest('.nav-item'); if(i) navigate(i.dataset.page);});
+  /* Mobile drawer: hamburger toggles, backdrop closes */
+  var _mb=document.getElementById('menu-btn'); if(_mb) _mb.addEventListener('click',function(){ document.body.classList.toggle('nav-open'); });
+  var _bd=document.getElementById('sb-backdrop'); if(_bd) _bd.addEventListener('click',closeDrawer);
   var start=(location.hash||'').slice(1);
   navigate(document.getElementById('page-'+start)?start:'dashboard');
   // Phase 8: ?session=<id> loads an existing backend session into the UI (no re-run)

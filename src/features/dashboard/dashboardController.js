@@ -63,7 +63,8 @@
   function actionCard(a) {
     return '<div class="action-card" onclick="openCompany(\'' + a.id + '\')">' +
       '<div class="action-top"><span class="action-pill ' + (PRI[a.priority] || 'pri-low') + '">' + esc(a.priority) + '</span>' +
-        '<span class="action-type">' + esc(a.action) + '</span></div>' +
+        '<span class="action-type">' + esc(a.action) + '</span>' +
+        '<span class="action-arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>' +
       '<div class="action-company">' + esc(a.company) + '</div>' +
       '<div class="action-reason">' + esc(a.reason) + '</div>' +
       '<div class="action-owner"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' + esc(a.owner) + '</div></div>';
@@ -134,8 +135,8 @@
         brief.focusCompanies.map(function (c) { return '<span class="brief-chip" onclick="openCompany(\'' + c.id + '\')">' + esc(c.crm.brandName) + '<b>' + (c.ai.opportunityScore || '') + '</b></span>'; }).join('') + '</div></div>'
       : '';
     var actionsHtml = actions.length
-      ? '<div class="section-head" style="margin-top:30px"><div class="page-lbl">Sales Action Center</div>' +
-        '<div class="dsp" style="font-size:22px;font-weight:800;color:var(--t);letter-spacing:-.025em">Immediate actions</div></div>' +
+      ? '<div class="section-head"><div class="page-lbl">Sales Action Center</div>' +
+        '<div class="section-title">Immediate actions</div></div>' +
         '<div class="action-grid">' + actions.map(actionCard).join('') + '</div>'
       : '';
 
@@ -181,11 +182,11 @@
       '</div>' +
       nudge +
       actionsHtml +
-      '<div class="section-head" style="margin-top:30px"><div class="page-lbl">Pipeline</div>' +
-        '<div class="dsp" style="font-size:22px;font-weight:800;color:var(--t);letter-spacing:-.025em">At a glance</div></div>' +
+      '<div class="section-head"><div class="page-lbl">Pipeline</div>' +
+        '<div class="section-title">At a glance</div></div>' +
       kpiHtml +
-      '<div class="section-head" style="margin-top:28px"><div class="page-lbl">Analytics</div>' +
-        '<div class="dsp" style="font-size:22px;font-weight:800;color:var(--t);letter-spacing:-.025em">Every chart answers a business question</div></div>' +
+      '<div class="section-head"><div class="page-lbl">Analytics</div>' +
+        '<div class="section-title">Every chart answers a business question</div></div>' +
       '<div class="chart-grid">' +
         chartCard('ch-score', 'How strong is the pipeline?', 'Opportunity Score distribution') +
         chartCard('ch-rec', 'What should the team act on?', 'Recommendation distribution') +
